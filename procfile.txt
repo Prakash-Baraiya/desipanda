@@ -1,1 +1,1 @@
-python convert_html_to_txt.py
+worker: convert_html_to_txt.py
