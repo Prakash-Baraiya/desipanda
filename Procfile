@@ -1,1 +1,2 @@
-web: python bot.py
+worker: python html_to_txt_bot.py
+
