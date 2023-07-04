@@ -48,7 +48,7 @@ def start(update, context):
 
 def main():
     # Replace 'YOUR_TOKEN' with your Telegram bot token
-    updater = Updater(token='YOUR_TOKEN', use_context=True)
+    updater = Updater(token='6309773140:AAFaxUDW3IQ9fHa8jkUCcCT2-3oYV5wikso', use_context=True)
     dispatcher = updater.dispatcher
 
     # Register the command handlers
