@@ -46,7 +46,8 @@ def convert_html_links_to_text(html_file_path, output_file_path):
     print(f"Conversion complete. Output file saved as {output_file_path}")
 
 def main():
-    updater = Updater(token=TOKEN, use_context=True)
+    updater = Updater(token='YOUR_TOKEN', use_context=True, port=int(os.environ.get('PORT', 5000)))
+
     dispatcher = updater.dispatcher
 
     start_handler = CommandHandler('start', start)
