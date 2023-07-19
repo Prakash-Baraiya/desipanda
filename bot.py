@@ -14,7 +14,7 @@ def start(update: Update, context):
 def handle_text(update: Update, context):
     text = update.message.text
     formatted_text = format_text(text)
-    send_formatted_text(formatted_text, context, update)
+    send_formatted_text(formatted_text, context)
 
 def handle_document(update: Update, context):
     file = context.bot.getFile(update.message.document.file_id)
@@ -27,19 +27,19 @@ def handle_document(update: Update, context):
         formatted_text = format_json(text)
     else:
         formatted_text = format_text(text)
-    send_formatted_text(formatted_text, context, update)
+    send_formatted_text(formatted_text, context)
     os.remove('temp')
 
-def send_formatted_text(formatted_text, context, update):
+def send_formatted_text(formatted_text, context):
     with open('formatted_text.txt', 'w') as f:
         f.write(formatted_text)
     with open('formatted_text.txt', 'rb') as f:
         context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='formatted_text.txt')
     os.remove('formatted_text.txt')
 
-def format_html(text):
+def format_html(html):
     from bs4 import BeautifulSoup
-    soup = BeautifulSoup(text, 'html.parser')
+    soup = BeautifulSoup(html, 'html.parser')
     links = soup.find_all('a')
     formatted_lines = []
     for link in links:
@@ -50,8 +50,8 @@ def format_html(text):
             formatted_lines.append(formatted_line)
     return '\n'.join(formatted_lines)
 
-def format_json(text):
-    data = json.loads(text)
+def format_json(json_str):
+    data = json.loads(json_str)
     formatted_lines = []
     for key, value in data.items():
         if isinstance(value, str) and re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', value):
@@ -69,7 +69,117 @@ def format_text(text):
             formatted_lines.append(formatted_line)
         else:
             formatted_lines.append(line)
-    return '\n'.join(formatted_lines)
+    
+    # Remove lines that are not in name:url format
+    final_formatted_lines=[]
+    
+    for line in formatted_lines:
+        if ":" in line:
+            final_formatted_lines.append(line)
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+    
+    
+    
+    
+    
+    
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
 updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_text))
