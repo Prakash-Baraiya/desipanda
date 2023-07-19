@@ -2,22 +2,25 @@ from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Hi! Send me a text or .txt file and I will replace all "https" with ":https".')
+    update.message.reply_text('Hi! Send me a text or .txt file and I will combine the name and URL link, separating them with a ":" symbol.')
 
 def handle_document(update: Update, context: CallbackContext) -> None:
     file = context.bot.getFile(update.message.document.file_id)
     file.download('temp.txt')
     with open('temp.txt', 'r') as f:
-        text = f.read()
-    text = text.replace('https', '\b:https')
+        lines = f.readlines()
+    new_lines = []
+    for line in lines:
+        if line.startswith('http'):
+            new_lines[-1] = new_lines[-1].strip() + ' : ' + line
+        else:
+            new_lines.append(line)
     with open('temp.txt', 'w') as f:
-        f.write(text)
+        f.writelines(new_lines)
     update.message.reply_document(open('temp.txt', 'rb'))
 
 def handle_text(update: Update, context: CallbackContext) -> None:
-    text = update.message.text
-    text = text.replace('https', '\b:https')
-    update.message.reply_text(text)
+    update.message.reply_text("Please send me a text or .txt file.")
 
 def main():
     updater = Updater("6309773140:AAFaxUDW3IQ9fHa8jkUCcCT2-3oYV5wikso")
