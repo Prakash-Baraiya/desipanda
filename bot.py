@@ -16,11 +16,29 @@ def convert_html_to_txt(update: Update, context: CallbackContext) -> None:
     with open('temp.txt', 'rb') as f:
         update.message.reply_document(f)
 
+def process_txt_file(update: Update, context: CallbackContext) -> None:
+    file = context.bot.getFile(update.message.document.file_id)
+    file.download('temp.txt')
+    with open('temp.txt', 'r') as f:
+        lines = f.readlines()
+        result = []
+        for line in lines:
+            parts = line.split()
+            if len(parts) >= 2:
+                name = parts[0]
+                url = parts[-1]
+                result.append(f'{name}: {url}')
+        with open('result.txt', 'w') as f:
+            f.write('\n'.join(result))
+    with open('result.txt', 'rb') as f:
+        update.message.reply_document(f)
+
 def main() -> None:
     updater = Updater("6309773140:AAFaxUDW3IQ9fHa8jkUCcCT2-3oYV5wikso")
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(MessageHandler(Filters.document.file_extension("html"), convert_html_to_txt))
+    dispatcher.add_handler(MessageHandler(Filters.document.file_extension("txt"), process_txt_file))
     updater.start_polling()
     updater.idle()
 
