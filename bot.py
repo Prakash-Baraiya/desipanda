@@ -18,7 +18,7 @@ def convert_html_to_txt(update: Update, context: CallbackContext) -> None:
             for link in links:
                 name = link.text
                 url = link.get('href')
-                f.write(f'{name}: {url}\n')
+                f.write(f'{name}:{url}\n')
     with open('output.txt', 'rb') as f:
         update.message.reply_document(f)
 
