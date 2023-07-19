@@ -14,7 +14,7 @@ def start(update: Update, context):
 def handle_text(update: Update, context):
     text = update.message.text
     formatted_text = format_text(text)
-    send_formatted_text(formatted_text, context)
+    send_formatted_text(formatted_text, context, update)
 
 def handle_document(update: Update, context):
     file = context.bot.getFile(update.message.document.file_id)
@@ -27,10 +27,10 @@ def handle_document(update: Update, context):
         formatted_text = format_json(text)
     else:
         formatted_text = format_text(text)
-    send_formatted_text(formatted_text, context)
+    send_formatted_text(formatted_text, context, update)
     os.remove('temp')
 
-def send_formatted_text(formatted_text, context):
+def send_formatted_text(formatted_text, context, update):
     with open('formatted_text.txt', 'w') as f:
         f.write(formatted_text)
     with open('formatted_text.txt', 'rb') as f:
