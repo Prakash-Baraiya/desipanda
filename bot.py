@@ -35,14 +35,14 @@ def handle_document(update: Update, context):
 def format_text(text):
     lines = text.split('\n')
     formatted_lines = []
+    names = set()
     for i, line in enumerate(lines):
         if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
             name_line = lines[i-1]
-            if name_line:
+            if name_line and name_line not in names:
                 formatted_line = f'{name_line}:{line}'
                 formatted_lines.append(formatted_line)
-        else:
-            formatted_lines.append(line)
+                names.add(name_line)
     return '\n'.join(formatted_lines)
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
