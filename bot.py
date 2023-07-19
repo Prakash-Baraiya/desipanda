@@ -31,6 +31,8 @@ def handle_document(update: Update, context):
     os.remove('temp')
 
 def send_formatted_text(formatted_text, context, update):
+    if not formatted_text:
+        formatted_text = ''
     with open('formatted_text.txt', 'w') as f:
         f.write(formatted_text)
     with open('formatted_text.txt', 'rb') as f:
@@ -45,7 +47,7 @@ def format_html(html):
     for link in links:
         name = link.text
         url = link.get('href')
-        if url and re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', url):
+        if url and re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', url) and 'telegram.org' not in url:
             formatted_line = f'{name}:{url}'
             formatted_lines.append(formatted_line)
     return '\n'.join(formatted_lines)
@@ -54,7 +56,7 @@ def format_json(json_str):
     data = json.loads(json_str)
     formatted_lines = []
     for key, value in data.items():
-        if isinstance(value, str) and re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', value):
+        if isinstance(value, str) and re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', value) and 'telegram.org' not in value:
             formatted_line = f'{key}:{value}'
             formatted_lines.append(formatted_line)
     return '\n'.join(formatted_lines)
@@ -65,7 +67,7 @@ def format_text(text):
     
     for i in range(len(lines)):
         line=lines[i]
-        if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
+        if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line) and 'telegram.org' not in line:
             name_line=lines[i-1]
             formatted_line=f'{name_line}:{line}'
             formatted_lines.append(formatted_line)
@@ -97,16 +99,6 @@ def format_text(text):
     
             
     
-            
-    
-            
-    
-            
-            
-            
-            
-            
-            
             
             
             
