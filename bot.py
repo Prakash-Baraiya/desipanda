@@ -1,37 +1,34 @@
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
-import json
+from bs4 import BeautifulSoup
 
 def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Hi! Please send me an HTML, TXT or JSON file from your storage.', reply_markup=ForceReply(selective=True))
+    update.message.reply_text('Hi! Please send me an HTML file or .html file from your storage.', reply_markup=ForceReply(selective=True))
 
-def handle_file(update: Update, context: CallbackContext) -> None:
-    file = update.message.document.get_file()
-    file_name = update.message.document.file_name
-    file_ext = file_name.split('.')[-1]
-    if file_ext not in ['html', 'txt', 'json']:
-        update.message.reply_text('Invalid file type. Please send an HTML, TXT or JSON file.')
-        return
-    file_content = file.download_as_bytearray().decode('utf-8')
-    if file_ext == 'html':
-        from bs4 import BeautifulSoup
-        soup = BeautifulSoup(file_content, 'html.parser')
+def convert_html_to_txt(update: Update, context: CallbackContext) -> None:
+    file = context.bot.getFile(update.message.document.file_id)
+    file.download('temp.html')
+    with open('temp.html', 'r', encoding='utf-8') as f:
+        soup = BeautifulSoup(f.read(), 'html.parser')
+        text = soup.get_text()
         links = soup.find_all('a')
-        result = '\n'.join([f'{link.text}:{link.get("href")}' for link in links])
-    elif file_ext == 'txt':
-        result = file_content
-    elif file_ext == 'json':
-        data = json.loads(file_content)
-        result = '\n'.join([f'{k}:{v}' for k,v in data.items()])
-    update.message.reply_text(result)
+        with open('output.txt', 'w', encoding='utf-8') as f:
+            f.write(text)
+            f.write('\n\nLinks:\n')
+            for link in links:
+                name = link.text
+                url = link.get('href')
+                f.write(f'{name}:{url}\n')
+    with open('output.txt', 'rb') as f:
+        update.message.reply_document(f)
 
 def main() -> None:
     updater = Updater("6309773140:AAFaxUDW3IQ9fHa8jkUCcCT2-3oYV5wikso")
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(MessageHandler(Filters.document, handle_file))
+    dispatcher.add_handler(MessageHandler(Filters.document.file_extension("html"), convert_html_to_txt))
     updater.start_polling()
     updater.idle()
 
-if __name__ == '__main__':
+if name == 'main':
     main()
