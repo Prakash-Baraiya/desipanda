@@ -23,7 +23,7 @@ def convert_html_to_txt(update: Update, context: CallbackContext) -> None:
         update.message.reply_document(f)
 
 def main() -> None:
-    updater = Updater("309773140:AAFaxUDW3IQ9fHa8jkUCcCT2-3oYV5wikso")
+    updater = Updater("6309773140:AAFaxUDW3IQ9fHa8jkUCcCT2-3oYV5wikso")
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(MessageHandler(Filters.document.file_extension("html"), convert_html_to_txt))
