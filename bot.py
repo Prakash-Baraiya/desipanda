@@ -1,4 +1,4 @@
-from telegram import Update, Bot
+from telegram import Update, Bot, InputFile
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
 import re
@@ -8,12 +8,16 @@ bot = Bot(TOKEN)
 updater = Updater(bot=bot)
 
 def start(update: Update, context):
-    update.message.reply_text('Hello! Send me a text or .txt file and I will extract all the links and names and format them as name:url.')
+    update.message.reply_text('Hello! Send me a text or .txt file and I will extract all the links and names and format them as name:url. I will send you back the modified text as a .txt file.')
 
 def handle_text(update: Update, context):
     text = update.message.text
     formatted_text = format_text(text)
-    update.message.reply_text(formatted_text)
+    with open('formatted_text.txt', 'w') as f:
+        f.write(formatted_text)
+    with open('formatted_text.txt', 'rb') as f:
+        context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='formatted_text.txt')
+    os.remove('formatted_text.txt')
 
 def handle_document(update: Update, context):
     file = context.bot.getFile(update.message.document.file_id)
@@ -21,8 +25,12 @@ def handle_document(update: Update, context):
     with open('temp.txt', 'r') as f:
         text = f.read()
     formatted_text = format_text(text)
-    update.message.reply_text(formatted_text)
+    with open('formatted_text.txt', 'w') as f:
+        f.write(formatted_text)
+    with open('formatted_text.txt', 'rb') as f:
+        context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='formatted_text.txt')
     os.remove('temp.txt')
+    os.remove('formatted_text.txt')
 
 def format_text(text):
     lines = text.split('\n')
