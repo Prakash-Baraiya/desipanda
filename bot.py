@@ -3,7 +3,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, Callb
 from bs4 import BeautifulSoup
 
 def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Hi! Please send me an HTML or .html file from your storage.', reply_markup=ForceReply(selective=True))
+    update.message.reply_text('Hi! Please send me an HTML file or .html file from your storage.', reply_markup=ForceReply(selective=True))
 
 def convert_html_to_txt(update: Update, context: CallbackContext) -> None:
     file = context.bot.getFile(update.message.document.file_id)
