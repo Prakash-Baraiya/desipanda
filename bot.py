@@ -1,19 +1,8 @@
 from bs4 import BeautifulSoup
 
-# HTML content stored as a string
-html_content = """
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Example Page</title>
-</head>
-<body>
-    <a href="https://www.example.com">Example Link 1</a>
-    <a href="https://www.example.org">Example Link 2</a>
-    <!-- Add more HTML content if needed -->
-</body>
-</html>
-"""
+# Open the HTML file
+with open("example.html", "r") as file:
+    html_content = file.read()
 
 # Create a BeautifulSoup object to parse the HTML content
 soup = BeautifulSoup(html_content, "html.parser")
@@ -28,9 +17,6 @@ for tag in anchor_tags:
     link = tag.get("href")
     result += f"{name}:{link}\n"
 
-# Save the extracted data in a text file (optional for local testing)
+# Save the extracted data in a text file
 with open("output.txt", "w") as file:
     file.write(result)
-
-# Print the extracted data to the console
-print(result)
