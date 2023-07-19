@@ -1,37 +1,28 @@
-import os
-import telebot
+from telegram import Update, ForceReply
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from bs4 import BeautifulSoup
 
-bot = telebot.TeleBot("YOUR_BOT_TOKEN")
+def start(update: Update, context: CallbackContext) -> None:
+    update.message.reply_text('Hi! Please send me an HTML file or .html file from your storage.', reply_markup=ForceReply(selective=True))
 
-@bot.message_handler(commands=["start"])
-def start(message):
-    bot.send_message(message.chat.id, "Hi! I can convert HTML files to text files.")
-    bot.send_message(message.chat.id, "To convert an HTML file, send me the file.")
+def convert_html_to_txt(update: Update, context: CallbackContext) -> None:
+    file = context.bot.getFile(update.message.document.file_id)
+    file.download('temp.html')
+    with open('temp.html', 'r') as f:
+        soup = BeautifulSoup(f.read(), 'html.parser')
+        text = soup.get_text()
+        with open('temp.txt', 'w') as f:
+            f.write(text)
+    with open('temp.txt', 'rb') as f:
+        update.message.reply_document(f)
 
-@bot.message_handler(content_types=["document"])
-def handle_document(message):
-    file_name = message.document.file_name
-    file_content = get_file_content(message.document.file_id)
+def main() -> None:
+    updater = Updater("YOUR_TOKEN_HERE")
+    dispatcher = updater.dispatcher
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(MessageHandler(Filters.document.file_extension("html"), convert_html_to_txt))
+    updater.start_polling()
+    updater.idle()
 
-    with open(file_name, "wb") as f:
-        f.write(file_content)
-
-    text_content = convert_html_to_text(file_name)
-
-    bot.send_message(message.chat.id, f"Here is the converted text file: {file_name}: {text_content}")
-
-def convert_html_to_text(file_name):
-    text = ""
-    with open(file_name, "r") as f:
-        soup = BeautifulSoup(f, "html.parser")
-        for tag in soup.find_all("a"):
-            if tag.get("href") and tag.get("href").startswith("https://"):
-                name = re.findall(r"(.+?)\.", tag["href"])[0]
-                text += f"{name}:{tag['href']}\n"
-
-    return text
-
-if __name__ == "__main__":
-    bot.polling()
-                
+if __name__ == '__main__':
+    main()
