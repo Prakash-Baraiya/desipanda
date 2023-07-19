@@ -18,12 +18,12 @@ def convert_html_to_txt(update: Update, context: CallbackContext) -> None:
             for link in links:
                 name = link.text
                 url = link.get('href')
-                f.write(f'{name}: {url}\n')
+                f.write(f'{name}:{url}\n')
     with open('output.txt', 'rb') as f:
         update.message.reply_document(f)
 
 def main() -> None:
-    updater = Updater("6309773140:AAFaxUDW3IQ9fHa8jkUCcCT2-3oYV5wikso")
+    updater = Updater("YOUR_TOKEN_HERE")
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(MessageHandler(Filters.document.file_extension("html"), convert_html_to_txt))
