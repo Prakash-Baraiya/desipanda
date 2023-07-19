@@ -2,7 +2,7 @@ from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 
 def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Hi! Send me a text or .txt file and I will combine the name and URL link, separating them with a ":" symbol.')
+    update.message.reply_text('Hi! Send me a text or .txt file and I will combine the name and URL link, separating them with a ":" symbol without any spaces.')
 
 def handle_document(update: Update, context: CallbackContext) -> None:
     file = context.bot.getFile(update.message.document.file_id)
@@ -12,7 +12,7 @@ def handle_document(update: Update, context: CallbackContext) -> None:
     new_lines = []
     for line in lines:
         if line.startswith('http'):
-            new_lines[-1] = new_lines[-1].strip() + ' : ' + line
+            new_lines[-1] = new_lines[-1].strip() + ':' + line
         else:
             new_lines.append(line)
     with open('temp.txt', 'w') as f:
