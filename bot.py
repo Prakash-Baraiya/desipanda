@@ -35,22 +35,10 @@ def handle_document(update: Update, context):
 def format_text(text):
     lines = text.split('\n')
     formatted_lines = []
-    for line in lines:
-        parts = line.split()
-        name = ''
-        url = ''
-        for i, part in enumerate(parts):
-            if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', part):
-                url = part
-                for j in range(i-1, max(i-4, -1), -1):
-                    if not parts[j].startswith('http'):
-                        name = parts[j] + ' ' + name
-                    else:
-                        break
-                break
-        name = name.strip()
-        if name and url:
-            formatted_line = f'{name}:{url}'
+    for i, line in enumerate(lines):
+        if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
+            name_line = lines[i-1]
+            formatted_line = f'{name_line}:{line}'
             formatted_lines.append(formatted_line)
         else:
             formatted_lines.append(line)
