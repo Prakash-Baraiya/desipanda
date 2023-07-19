@@ -35,11 +35,17 @@ def handle_document(update: Update, context):
 def format_text(text):
     lines = text.split('\n')
     formatted_lines = []
+    allowed_extensions = ['.m3u8', '.pdf', '.mpd', '.mp4', '.mkv', '.flv', '.rar', '.zip']
     for i, line in enumerate(lines):
         if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
-            name_line = lines[i-1]
-            formatted_line = f'{name_line}:{line}'
-            formatted_lines.append(formatted_line)
+            if any(line.endswith(ext) for ext in allowed_extensions):
+                name_line = lines[i-1]
+                formatted_line = f'{name_line}:{line}'
+                formatted_lines.append(formatted_line)
+            else:
+                continue
+        elif i > 0 and re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', lines[i-1]):
+            continue
         else:
             formatted_lines.append(line)
     return '\n'.join(formatted_lines)
