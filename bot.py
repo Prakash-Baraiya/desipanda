@@ -2,7 +2,6 @@ from telegram import Update, Bot, InputFile
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
 import re
-from urllib.parse import urlparse
 
 TOKEN = '6309773140:AAFaxUDW3IQ9fHa8jkUCcCT2-3oYV5wikso'
 bot = Bot(TOKEN)
@@ -36,15 +35,13 @@ def handle_document(update: Update, context):
 def format_text(text):
     lines = text.split('\n')
     formatted_lines = []
-    for line in lines:
+    for i, line in enumerate(lines):
         if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
-            url = urlparse(line)
-            name = url.netloc
-            formatted_line = f'{name}:{line}'
+            name_line = lines[i-1]
+            formatted_line = f'{name_line}:{line}'
             formatted_lines.append(formatted_line)
         else:
-            if not re.match(r'^telegram\..*', line):
-                formatted_lines.append(line)
+            formatted_lines.append(line)
     return '\n'.join(formatted_lines)
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
