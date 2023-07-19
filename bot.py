@@ -1,6 +1,7 @@
 from telegram import Update, Bot
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
+import re
 
 TOKEN = '6309773140:AAFaxUDW3IQ9fHa8jkUCcCT2-3oYV5wikso'
 bot = Bot(TOKEN)
@@ -30,15 +31,21 @@ def format_text(text):
         parts = line.split()
         name = ''
         url = ''
-        for part in parts:
-            if part.startswith('http'):
+        for i, part in enumerate(parts):
+            if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', part):
                 url = part
-            else:
-                name += part + ' '
+                for j in range(i-1, max(i-4, -1), -1):
+                    if not parts[j].startswith('http'):
+                        name = parts[j] + ' ' + name
+                    else:
+                        break
+                break
         name = name.strip()
         if name and url:
             formatted_line = f'{name}:{url}'
             formatted_lines.append(formatted_line)
+        else:
+            formatted_lines.append(line)
     return '\n'.join(formatted_lines)
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
