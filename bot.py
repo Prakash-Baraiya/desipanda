@@ -62,20 +62,99 @@ def format_json(json_str):
 def format_text(text):
     lines = text.split('\n')
     formatted_lines = []
-    for i, line in enumerate(lines):
-        if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
-            name_line = lines[i-1]
-            formatted_line = f'{name_line}:{line}'
-            formatted_lines.append(formatted_line)
-        else:
-            formatted_lines.append(line)
-
-    # Remove lines that are not in name:url format
-    final_formatted_lines=[]
     
-    for line in formatted_lines:
-        if ":" in line:
-            final_formatted_lines.append(line)
+    for i in range(len(lines)):
+        line=lines[i]
+        if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
+            name_line=lines[i-1]
+            formatted_line=f'{name_line}:{line}'
+            formatted_lines.append(formatted_line)
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+    
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+    
+    
+    
+    
+    
+    
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
 updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_text))
