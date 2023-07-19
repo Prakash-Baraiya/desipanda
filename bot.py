@@ -1,31 +1,26 @@
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from bs4 import BeautifulSoup
 
 def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Hi! Please send me a TXT file from your storage.', reply_markup=ForceReply(selective=True))
+    update.message.reply_text('Hi! Please send me an HTML file or .html file from your storage.', reply_markup=ForceReply(selective=True))
 
-def handle_file(update: Update, context: CallbackContext) -> None:
-    file = update.message.document.get_file()
-    file_name = update.message.document.file_name
-    file_ext = file_name.split('.')[-1]
-    if file_ext != 'txt':
-        update.message.reply_text('Invalid file type. Please send a TXT file.')
-        return
-    file_content = file.download_as_bytearray().decode('utf-8')
-    lines = file_content.split('\n')
-    result = []
-    for line in lines:
-        parts = line.split()
-        if len(parts) == 2:
-            name, url = parts
-            result.append(f'{name}:{url}')
-    update.message.reply_text('\n'.join(result))
+def convert_html_to_txt(update: Update, context: CallbackContext) -> None:
+    file = context.bot.getFile(update.message.document.file_id)
+    file.download('temp.html')
+    with open('temp.html', 'r') as f:
+        soup = BeautifulSoup(f.read(), 'html.parser')
+        text = soup.get_text()
+        with open('temp.txt', 'w') as f:
+            f.write(text)
+    with open('temp.txt', 'rb') as f:
+        update.message.reply_document(f)
 
 def main() -> None:
     updater = Updater("6309773140:AAFaxUDW3IQ9fHa8jkUCcCT2-3oYV5wikso")
     dispatcher = updater.dispatcher
     dispatcher.add_handler(CommandHandler("start", start))
-    dispatcher.add_handler(MessageHandler(Filters.document, handle_file))
+    dispatcher.add_handler(MessageHandler(Filters.document.file_extension("html"), convert_html_to_txt))
     updater.start_polling()
     updater.idle()
 
