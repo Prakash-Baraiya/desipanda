@@ -38,8 +38,9 @@ def format_text(text):
     for i, line in enumerate(lines):
         if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
             name_line = lines[i-1]
-            formatted_line = f'{name_line}:{line}'
-            formatted_lines.append(formatted_line)
+            if name_line:
+                formatted_line = f'{name_line}:{line}'
+                formatted_lines.append(formatted_line)
         else:
             formatted_lines.append(line)
     return '\n'.join(formatted_lines)
