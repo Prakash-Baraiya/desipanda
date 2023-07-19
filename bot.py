@@ -37,12 +37,14 @@ def format_text(text):
     formatted_lines = []
     for i, line in enumerate(lines):
         if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
-            name_line = lines[i-1]
+            name_line_index = i-1
+            name_line = lines[name_line_index]
             formatted_line = f'{name_line}:{line}'
             formatted_lines.append(formatted_line)
+            lines[name_line_index] = ''
         else:
             formatted_lines.append(line)
-    return '\n'.join(formatted_lines)
+    return '\n'.join([line for line in formatted_lines if line])
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
 updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_text))
