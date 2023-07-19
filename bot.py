@@ -9,14 +9,14 @@ def handle_document(update: Update, context: CallbackContext) -> None:
     file.download('temp.txt')
     with open('temp.txt', 'r') as f:
         text = f.read()
-    text = text.replace('https', ':https')
+    text = text.replace('https', '\b:https')
     with open('temp.txt', 'w') as f:
         f.write(text)
     update.message.reply_document(open('temp.txt', 'rb'))
 
 def handle_text(update: Update, context: CallbackContext) -> None:
     text = update.message.text
-    text = text.replace('https', ':https')
+    text = text.replace('https', '\b:https')
     update.message.reply_text(text)
 
 def main():
