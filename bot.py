@@ -44,8 +44,11 @@ def handle_document(update: Update, context):
         update.message.reply_text("Unsupported file format. Please send a .txt, .json, .html, or .pdf file.")
         return
 
-    formatted_text = format_text(text)
-    send_formatted_text(update, context, formatted_text)
+    if text:
+        formatted_text = format_text(text)
+        send_formatted_text(update, context, formatted_text)
+    else:
+        update.message.reply_text("The file is empty. Please send a non-empty file.")
 
 def send_formatted_text(update, context, formatted_text):
     with open('formatted_text.txt', 'w') as f:
