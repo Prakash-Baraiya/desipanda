@@ -24,22 +24,21 @@ def handle_document(update: Update, context):
     file_extension = os.path.splitext(file.file_path)[1].lower()
 
     if file_extension == '.txt':
-        file.download('temp.txt')
-        with open('temp.txt', 'r') as f:
-            text = f.read()
+        text = read_file_as_text(file)
     elif file_extension == '.json':
-        file.download('temp.json')
-        with open('temp.json', 'r') as f:
-            data = json.load(f)
-        text = format_json(data)
+        text = read_file_as_text(file, encoding='utf-8')
+        if text:
+            try:
+                data = json.loads(text)
+                text = format_json(data)
+            except json.JSONDecodeError:
+                text = None
     elif file_extension == '.html':
-        file.download('temp.html')
-        with open('temp.html', 'r') as f:
-            text = format_html(f.read())
+        text = read_file_as_text(file, encoding='utf-8')
+        if text:
+            text = format_html(text)
     elif file_extension == '.pdf':
-        file.download('temp.pdf')
-        with open('temp.pdf', 'rb') as f:
-            text = format_pdf(f)
+        text = read_pdf_as_text(file)
     else:
         update.message.reply_text("Unsupported file format. Please send a .txt, .json, .html, or .pdf file.")
         return
@@ -48,14 +47,20 @@ def handle_document(update: Update, context):
         formatted_text = format_text(text)
         send_formatted_text(update, context, formatted_text)
     else:
-        update.message.reply_text("The file is empty. Please send a non-empty file.")
+        update.message.reply_text("The file is empty or cannot be read. Please send a valid non-empty file.")
 
 def send_formatted_text(update, context, formatted_text):
-    with open('formatted_text.txt', 'w') as f:
+    with open('formatted_text.txt', 'w', encoding='utf-8') as f:
         f.write(formatted_text)
     with open('formatted_text.txt', 'rb') as f:
         context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='formatted_text.txt')
     os.remove('formatted_text.txt')
+
+def read_file_as_text(file, encoding='utf-8'):
+    with BytesIO() as temp_buffer:
+        file.download(out=temp_buffer)
+        temp_buffer.seek(0)
+        return temp_buffer.read().decode(encoding)
 
 def format_text(text):
     lines = text.split('\n')
@@ -96,13 +101,16 @@ def format_html(html_text):
         formatted_text += formatted_line + '\n'
     return formatted_text
 
-def format_pdf(pdf_file):
-    pdf_reader = PdfReader(pdf_file)
-    formatted_text = ''
-    for page in pdf_reader.pages:
-        text = page.extract_text()
-        formatted_text += text + '\n'
-    return formatted_text
+def read_pdf_as_text(file):
+    with BytesIO() as temp_buffer:
+        file.download(out=temp_buffer)
+        temp_buffer.seek(0)
+        pdf_reader = PdfReader(temp_buffer)
+        formatted_text = ''
+        for page in pdf_reader.pages:
+            text = page.extract_text()
+            formatted_text += text + '\n'
+        return formatted_text
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
 updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_text))
