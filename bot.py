@@ -12,7 +12,6 @@ def start(update: Update, context):
 
 def handle_text(update: Update, context):
     text = update.message.text
-    text = remove_special_characters(text)
     formatted_text = format_text(text)
     with open('formatted_text.txt', 'w') as f:
         f.write(formatted_text)
@@ -25,7 +24,6 @@ def handle_document(update: Update, context):
     file.download('temp.txt')
     with open('temp.txt', 'r') as f:
         text = f.read()
-    text = remove_special_characters(text)
     formatted_text = format_text(text)
     with open('formatted_text.txt', 'w') as f:
         f.write(formatted_text)
@@ -33,15 +31,6 @@ def handle_document(update: Update, context):
         context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='formatted_text.txt')
     os.remove('temp.txt')
     os.remove('formatted_text.txt')
-
-def remove_special_characters(text):
-    # Remove {} and CPVOD.testbook from the text
-    text = re.sub(r'\{.*?\}', '', text)
-    text = text.replace('CPVOD.testbook', '')
-    # Remove special characters and double quotes
-    text = re.sub(r'[^\w\s]', '', text)
-    text = text.replace('"', '')
-    return text
 
 def format_text(text):
     lines = text.split('\n')
@@ -53,7 +42,12 @@ def format_text(text):
                 name_line = lines[i-1]
                 formatted_line = f'{name_line}:{line}'
                 formatted_lines.append(formatted_line)
-
+            else:
+                continue
+        elif i > 0 and re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', lines[i-1]):
+            continue
+        else:
+            continue
     return '\n'.join(formatted_lines)
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
