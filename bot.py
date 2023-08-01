@@ -3,7 +3,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
 import re
 
-TOKEN = '6309773140:AAFaxUDW3IQ9fHa8jkUCcCT2-3oYV5wikso'
+TOKEN = '6488165968:AAFyogItsIQm2VEsk_GWRsZAXf3ZNij-t6s'
 bot = Bot(TOKEN)
 updater = Updater(bot=bot)
 
@@ -12,6 +12,7 @@ def start(update: Update, context):
 
 def handle_text(update: Update, context):
     text = update.message.text
+    text = remove_special_characters(text)
     formatted_text = format_text(text)
     with open('formatted_text.txt', 'w') as f:
         f.write(formatted_text)
@@ -24,6 +25,7 @@ def handle_document(update: Update, context):
     file.download('temp.txt')
     with open('temp.txt', 'r') as f:
         text = f.read()
+    text = remove_special_characters(text)
     formatted_text = format_text(text)
     with open('formatted_text.txt', 'w') as f:
         f.write(formatted_text)
@@ -31,6 +33,15 @@ def handle_document(update: Update, context):
         context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='formatted_text.txt')
     os.remove('temp.txt')
     os.remove('formatted_text.txt')
+
+def remove_special_characters(text):
+    # Remove {} and CPVOD.testbook from the text
+    text = re.sub(r'\{.*?\}', '', text)
+    text = text.replace('CPVOD.testbook', '')
+    # Remove special characters and double quotes
+    text = re.sub(r'[^\w\s]', '', text)
+    text = text.replace('"', '')
+    return text
 
 def format_text(text):
     lines = text.split('\n')
