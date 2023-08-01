@@ -12,11 +12,11 @@ bot = Bot(TOKEN)
 updater = Updater(bot=bot)
 
 def start(update: Update, context):
-    update.message.reply_text('Hello! Send me a text or .txt, .json, .html, or .pdf file and I will extract all the links and names and format them as name:url. I will send you back the modified text as a .txt file.')
+    update.message.reply_text('Hello! Send me a text or .txt, .json, .html, or .pdf file, and I will process it.')
 
 def handle_text(update: Update, context):
     text = update.message.text
-    formatted_text = format_text(text)
+    formatted_text = process_text(text)
     send_formatted_text(update, context, formatted_text)
 
 def handle_document(update: Update, context):
@@ -30,13 +30,13 @@ def handle_document(update: Update, context):
         if text:
             try:
                 data = json.loads(text)
-                text = format_json(data)
+                text = process_json(data)
             except json.JSONDecodeError:
                 text = None
     elif file_extension == '.html':
         text = read_file_as_text(file, encoding='utf-8')
         if text:
-            text = format_html(text)
+            text = process_html(text)
     elif file_extension == '.pdf':
         text = read_pdf_as_text(file)
     else:
@@ -44,7 +44,7 @@ def handle_document(update: Update, context):
         return
 
     if text:
-        formatted_text = format_text(text)
+        formatted_text = process_text(text)
         send_formatted_text(update, context, formatted_text)
     else:
         update.message.reply_text("The file is empty or cannot be read. Please send a valid non-empty file.")
@@ -62,25 +62,27 @@ def read_file_as_text(file, encoding='utf-8'):
         temp_buffer.seek(0)
         return temp_buffer.read().decode(encoding)
 
-def format_text(text):
+def process_text(text):
+    # Remove curly braces and incompatible characters
+    text = re.sub(r'[\{\}"]', '', text)
+
+    # Remove lines not compatible with name:url format
     lines = text.split('\n')
     formatted_lines = []
-    allowed_extensions = ['.m3u8', '.pdf', '.mpd', '.mp4', '.mkv', '.flv', '.rar', '.zip']
-    for i, line in enumerate(lines):
-        if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
-            if any(line.endswith(ext) for ext in allowed_extensions):
-                name_line = lines[i-1]
-                formatted_line = f'{name_line}:{line}'
-                formatted_lines.append(formatted_line)
-            else:
-                continue
-        elif i > 0 and re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', lines[i-1]):
-            continue
-        else:
-            continue
-    return '\n'.join(formatted_lines)
+    for line in lines:
+        parts = line.split(':')
+        if len(parts) == 2 and parts[0].strip() and parts[1].strip():
+            formatted_lines.append(line)
 
-def format_json(data):
+    # Remove empty lines and "CPVOD connected complete" text
+    formatted_lines = [line for line in formatted_lines if line.strip() and "CPVOD" not in line]
+
+    # Join the formatted lines into the final text
+    formatted_text = '\n'.join(formatted_lines)
+
+    return formatted_text
+
+def process_json(data):
     formatted_text = ''
     for item in data:
         if isinstance(item, dict):
@@ -90,7 +92,7 @@ def format_json(data):
             formatted_text += formatted_line + '\n'
     return formatted_text
 
-def format_html(html_text):
+def process_html(html_text):
     soup = BeautifulSoup(html_text, 'html.parser')
     links = soup.find_all('a')
     formatted_text = ''
