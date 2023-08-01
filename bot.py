@@ -75,10 +75,11 @@ def format_text(text):
 def format_json(data):
     formatted_text = ''
     for item in data:
-        name = item.get('name', '')
-        url = item.get('url', '')
-        formatted_line = f'{name}:{url}'
-        formatted_text += formatted_line + '\n'
+        if isinstance(item, dict):
+            name = item.get('name', '')
+            url = item.get('url', '')
+            formatted_line = f'{name}:{url}'
+            formatted_text += formatted_line + '\n'
     return formatted_text
 
 def format_html(html_text):
