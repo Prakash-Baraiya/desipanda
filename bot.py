@@ -27,6 +27,11 @@ def format_text(text):
     lines = text.split('\n')
     formatted_lines = []
     current_name = ""
+    
+    # Lines already in "name:https" format will be preserved in the final output
+    existing_lines = [line for line in lines if re.match(r'.+:https://[^\s]+', line)]
+    formatted_lines.extend(existing_lines)
+    
     for line in lines:
         url_match = re.match(r'https://[^\s]+', line)
         if url_match:
