@@ -8,7 +8,7 @@ bot = Bot(TOKEN)
 updater = Updater(bot=bot)
 
 def start(update: Update, context):
-    update.message.reply_text('Hello! Send me a text or .txt file, and I will extract names and URLs, then format them as name:url. I will send you back the modified text as a .txt file.')
+    update.message.reply_text('Hello! Send me a text or .txt file, and I will extract names and URLs, then format them as name:https url. I will send you back the modified text as a .txt file.')
 
 def handle_document(update: Update, context):
     file = context.bot.getFile(update.message.document.file_id)
