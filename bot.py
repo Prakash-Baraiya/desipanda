@@ -34,6 +34,7 @@ def format_text(text):
             formatted_line = f'{current_name}:{url}'
             if formatted_line not in formatted_lines:  # Ensure unique pairs
                 formatted_lines.append(formatted_line)
+                current_name = ""  # Reset current_name for the next URL
         else:
             current_name += line.strip()  # Extend the current name until a URL is encountered
     return '\n'.join(formatted_lines)
