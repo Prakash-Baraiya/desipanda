@@ -17,27 +17,27 @@ def handle_document(update: Update, context):
     with open('temp.txt', 'r') as f:
         text = f.read()
     
-    formatted_text, skipped_text = format_text(text)
+    formatted_text, skipped_content = format_text(text)
     
     with open('formatted_text.txt', 'w') as f:
         f.write(formatted_text)
     with open('formatted_text.txt', 'rb') as f:
         context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='formatted_text.txt')
-    
-    if skipped_text:
-        with open('skipped_text.txt', 'w') as f:
-            f.write(skipped_text)
-        with open('skipped_text.txt', 'rb') as f:
-            context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='skipped_text.txt')
+
+    if skipped_content:
+        with open('skipped_content.txt', 'w') as f:
+            f.write('\n'.join(skipped_content))
+        with open('skipped_content.txt', 'rb') as f:
+            context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='skipped_content.txt')
 
     os.remove('temp.txt')
     os.remove('formatted_text.txt')
-    os.remove('skipped_text.txt')
+    os.remove('skipped_content.txt')
 
 def format_text(text):
     lines = text.split('\n')
     formatted_lines = []
-    skipped_lines = []
+    skipped_content = []
     current_name = ""
     
     # Lines already in "name:https" format will be preserved in the final output
@@ -55,12 +55,9 @@ def format_text(text):
                 current_name = ""  # Reset current_name for the next URL
         else:
             current_name += line.strip()  # Extend the current name until a URL is encountered
-            skipped_lines.append(line.strip())
+            skipped_content.append(line.strip())  # Track skipped content
 
-    formatted_text = '\n'.join(formatted_lines)
-    skipped_text = '\n'.join(skipped_lines)
-
-    return formatted_text, skipped_text
+    return '\n'.join(formatted_lines), skipped_content
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
 updater.dispatcher.add_handler(MessageHandler(Filters.document, handle_document))
