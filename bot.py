@@ -32,7 +32,8 @@ def format_text(text):
         if url_match:
             url = url_match.group().strip()
             formatted_line = f'{current_name}:{url}'
-            formatted_lines.append(formatted_line)
+            if formatted_line not in formatted_lines:  # Ensure unique pairs
+                formatted_lines.append(formatted_line)
         else:
             current_name += line.strip()  # Extend the current name until a URL is encountered
     return '\n'.join(formatted_lines)
