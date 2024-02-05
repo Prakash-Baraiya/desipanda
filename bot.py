@@ -31,7 +31,8 @@ def format_text(text):
         url_match = re.match(r'https://[^\s]+', line)
         if url_match:
             url = url_match.group().strip()
-            formatted_line = f'{current_name}:{url}'
+            name = current_name if current_name and ':' not in current_name else 'no name'
+            formatted_line = f'{name}:{url}'
             if formatted_line not in formatted_lines:  # Ensure unique pairs
                 formatted_lines.append(formatted_line)
                 current_name = ""  # Reset current_name for the next URL
