@@ -1,6 +1,7 @@
 from telegram import Update, Bot, InputFile
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
+from urllib.parse import urlparse
 import re
 
 TOKEN = '6488165968:AAFyogItsIQm2VEsk_GWRsZAXf3ZNij-t6s'
@@ -29,14 +30,13 @@ def format_text(text):
     current_name = ""
     
     # Lines already in "name:https" format will be preserved in the final output
-    existing_lines = [line for line in lines if re.match(r'.+:https://[^\s]+', line)]
+    existing_lines = [line for line in lines if re.match(r'.+:https?://[^\s]+', line)]
     formatted_lines.extend(existing_lines)
     
     for line in lines:
-        url_match = re.match(r'https?://[^\s]+', line)
-
-        if url_match:
-            url = url_match.group().strip()
+        url_parts = urlparse(line.strip())
+        if url_parts.scheme and url_parts.netloc:  # Check if it's a valid URL
+            url = line.strip()
             name = current_name if current_name and ':' not in current_name else 'no name'
             formatted_line = f'{name}:{url}'
             if formatted_line not in formatted_lines:  # Ensure unique pairs
@@ -44,6 +44,7 @@ def format_text(text):
                 current_name = ""  # Reset current_name for the next URL
         else:
             current_name += line.strip()  # Extend the current name until a URL is encountered
+
     return '\n'.join(formatted_lines)
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
