@@ -8,16 +8,7 @@ bot = Bot(TOKEN)
 updater = Updater(bot=bot)
 
 def start(update: Update, context):
-    update.message.reply_text('Hello! Send me a text or .txt file and I will extract all the links and names and format them as name:url. I will send you back the modified text as a .txt file.')
-
-def handle_text(update: Update, context):
-    text = update.message.text
-    formatted_text = format_text(text)
-    with open('formatted_text.txt', 'w') as f:
-        f.write(formatted_text)
-    with open('formatted_text.txt', 'rb') as f:
-        context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='formatted_text.txt')
-    os.remove('formatted_text.txt')
+    update.message.reply_text('Hello! Send me a text or .txt file and I will extract names and URLs, then format them as name:url. I will send you back the modified text as a .txt file.')
 
 def handle_document(update: Update, context):
     file = context.bot.getFile(update.message.document.file_id)
@@ -35,23 +26,19 @@ def handle_document(update: Update, context):
 def format_text(text):
     lines = text.split('\n')
     formatted_lines = []
-    allowed_extensions = ['.m3u8', '.pdf', '.mpd', '.mp4', '.mkv', '.flv', '.rar', '.zip']
-    for i, line in enumerate(lines):
-        if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
-            if any(line.endswith(ext) for ext in allowed_extensions):
-                name_line = lines[i-1]
-                formatted_line = f'{name_line}:{line}'
-                formatted_lines.append(formatted_line)
-            else:
-                continue
-        elif i > 0 and re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', lines[i-1]):
-            continue
-        else:
-            continue
+    current_name = ""
+    for line in lines:
+        match = re.match(r'(.*?)https://', line)
+        if match:
+            current_name = match.group(1).strip()
+        url_match = re.search(r'https://[^\s]+', line)
+        if url_match:
+            url = url_match.group().strip()
+            formatted_line = f'{current_name}:{url}'
+            formatted_lines.append(formatted_line)
     return '\n'.join(formatted_lines)
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
-updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_text))
 updater.dispatcher.add_handler(MessageHandler(Filters.document, handle_document))
 
 updater.start_polling()
