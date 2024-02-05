@@ -28,14 +28,13 @@ def format_text(text):
     formatted_lines = []
     current_name = ""
     for line in lines:
-        match = re.match(r'(.*?)https://', line)
-        if match:
-            current_name = match.group(1).strip()
-        url_match = re.search(r'https://[^\s]+', line)
+        url_match = re.match(r'https://[^\s]+', line)
         if url_match:
             url = url_match.group().strip()
             formatted_line = f'{current_name}:{url}'
             formatted_lines.append(formatted_line)
+        else:
+            current_name += line.strip()  # Extend the current name until a URL is encountered
     return '\n'.join(formatted_lines)
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
