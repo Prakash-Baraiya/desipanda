@@ -16,9 +16,12 @@ def handle_document(update: Update, context):
     file.download('temp.txt')
     with open('temp.txt', 'r') as f:
         text = f.read()
-    formatted_text = format_text(text)
+    formatted_text, remaining_text = format_text(text)
     with open('formatted_text.txt', 'w') as f:
         f.write(formatted_text)
+        if remaining_text:
+            f.write('\n\nOriginal Unmatched Lines:\n')
+            f.write(remaining_text)
     with open('formatted_text.txt', 'rb') as f:
         context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='formatted_text.txt')
     os.remove('temp.txt')
@@ -33,6 +36,8 @@ def format_text(text):
     existing_lines = [line for line in lines if re.match(r'.+:https?://[^\s]+', line)]
     formatted_lines.extend(existing_lines)
     
+    remaining_lines = []
+
     for line in lines:
         url_parts = urlparse(line.strip())
         if url_parts.scheme and url_parts.netloc:  # Check if it's a valid URL
@@ -43,9 +48,9 @@ def format_text(text):
                 formatted_lines.append(formatted_line)
                 current_name = ""  # Reset current_name for the next URL
         else:
-            current_name += line.strip()  # Extend the current name until a URL is encountered
+            remaining_lines.append(line.strip())  # Store unmatched lines
 
-    return '\n'.join(formatted_lines)
+    return '\n'.join(formatted_lines), '\n'.join(remaining_lines)
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
 updater.dispatcher.add_handler(MessageHandler(Filters.document, handle_document))
