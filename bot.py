@@ -33,14 +33,17 @@ def format_text(text):
     formatted_lines.extend(existing_lines)
     
     for line in lines:
-        url_matches = re.findall(r'https://[^\s]+', line)
-        for url_match in url_matches:
-            url = url_match.strip()
+        url_match = re.match(r'https?://[^\s]+', line)
+
+        if url_match:
+            url = url_match.group().strip()
             name = current_name if current_name and ':' not in current_name else 'no name'
             formatted_line = f'{name}:{url}'
             if formatted_line not in formatted_lines:  # Ensure unique pairs
                 formatted_lines.append(formatted_line)
                 current_name = ""  # Reset current_name for the next URL
+        else:
+            current_name += line.strip()  # Extend the current name until a URL is encountered
     return '\n'.join(formatted_lines)
 
 updater.dispatcher.add_handler(CommandHandler('start', start))
