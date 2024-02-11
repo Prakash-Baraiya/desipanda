@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import Message, InputFile
+from pyrogram.types import Message
 import os
 import re
 import asyncio
@@ -50,11 +50,11 @@ async def process_text_file(_, message: Message):
             formatted_text = format_text(content)
 
             if formatted_text:
-                with open('formatted_text.txt', 'w') as f:
+                path = f"./downloads/{message.chat.id}/formatted_text.txt"
+                with open(path, 'w') as f:
                     f.write(formatted_text)
-                with open('formatted_text.txt', 'rb') as f:
-                    await app.send_document(chat_id=message.chat.id, document=InputFile(f), filename='formatted_text.txt')
-                os.remove('formatted_text.txt')
+                await app.send_document(chat_id=message.chat.id, document=path, filename='formatted_text.txt')
+                os.remove(path)
             else:
                 await message.reply_text("No valid links found in the document.")
         except Exception as e:
