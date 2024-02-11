@@ -1,4 +1,6 @@
 bs4
 python-telegram-bot
 beautifulsoup4
+pyrogram
+pyromod
 
