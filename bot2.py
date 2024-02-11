@@ -10,19 +10,20 @@ BOT_TOKEN = "6488165968:AAFyogItsIQm2VEsk_GWRsZAXf3ZNij-t6s"
 app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 @app.on_message(filters.command("start"))
-def start(_, message: Message):
-    message.reply_text('Welcome to your bot! Please upload a text file.')
+async def start(_, message: Message):
+    await message.reply_text('Welcome to your bot! Please upload a text file.')
 
 @app.on_message(filters.document)
-def process_text_file(_, message: Message):
+async def process_text_file(_, message: Message):
     document = message.document
     if document.mime_type == "text/plain":
-        text = app.get_file(document.file_id).download_as_text()
+        file_data = await app.download_media(document)
+        text = file_data.decode("utf-8")
         urls_and_names = extract_urls_and_names(text)
         output_text = format_output(urls_and_names)
-        message.reply_text(output_text)
+        await message.reply_text(output_text)
     else:
-        message.reply_text("Please upload a valid text file.")
+        await message.reply_text("Please upload a valid text file.")
 
 def extract_urls_and_names(text: str) -> list:
     # Use regex to find all URLs and corresponding names
