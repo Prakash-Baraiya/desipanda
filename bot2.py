@@ -18,23 +18,25 @@ async def process_text_file(_, message: Message):
     document = message.document
     if document.mime_type == "text/plain":
         file_data = await app.download_media(document)
-        urls_and_names = extract_urls_and_names(file_data)
-        output_text = format_output(urls_and_names)
+        content = file_data.decode("utf-8")
+        content_lines = content.split("\n")
+        links = extract_urls_and_names(content_lines)
+        output_text = format_output(links)
         await message.reply_text(output_text)
     else:
         await message.reply_text("Please upload a valid text file.")
 
-def extract_urls_and_names(text: str) -> list:
+def extract_urls_and_names(lines: list) -> list:
     # Use regex to find all URLs and corresponding names
     pattern = r'([^:\n]+)\s*:\s*(https?://[^\s]+)'
-    matches = re.findall(pattern, text)
-    return matches
+    matches = [re.findall(pattern, line) for line in lines]
+    return [match for match_list in matches for match in match_list]
 
 def format_output(urls_and_names: list) -> str:
     formatted_output = ""
     for name, url in urls_and_names:
         formatted_output += f"{name}\n{url}\n"
-    return formatted_output
+    return formatted_output.strip()  # Remove trailing whitespace and newlines
 
 if __name__ == "__main__":
     app.run()
