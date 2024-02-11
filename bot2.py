@@ -1,6 +1,7 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 import re
+import asyncio
 
 # Replace 'YOUR_API_ID' and 'YOUR_API_HASH' with your actual values
 API_ID = "11657097"
@@ -13,15 +14,29 @@ app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 async def start(_, message: Message):
     await message.reply_text('Welcome to your bot! Please upload a text file.')
 
+async def read_and_decode_document(document):
+    try:
+        file_data = await app.download_media(document)
+        return file_data.decode("utf-8")
+    except Exception as e:
+        print(f"Error reading and decoding document: {e}")
+        return ""
+
 @app.on_message(filters.document)
 async def process_text_file(_, message: Message):
     document = message.document
     if document.mime_type == "text/plain":
-        file_data = await app.download_media(document)
-        content_lines = file_data.split("\n")
-        links = extract_urls_and_names(content_lines)
-        output_text = format_output(links)
-        await message.reply_text(output_text)
+        content = await read_and_decode_document(document)
+        if content:
+            content_lines = content.split("\n")
+            links = extract_urls_and_names(content_lines)
+            output_text = format_output(links)
+            if output_text:
+                await message.reply_text(output_text)
+            else:
+                await message.reply_text("The processed text is empty or contains invalid characters.")
+        else:
+            await message.reply_text("Error reading and decoding the document.")
     else:
         await message.reply_text("Please upload a valid text file.")
 
