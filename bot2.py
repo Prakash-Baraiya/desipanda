@@ -1,7 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 import re
-import asyncio
 
 # Replace 'YOUR_API_ID' and 'YOUR_API_HASH' with your actual values
 API_ID = "11657097"
@@ -14,41 +13,56 @@ app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 async def start(_, message: Message):
     await message.reply_text('Welcome to your bot! Please upload a text file.')
 
-async def read_and_decode_document(document):
-    try:
-        file_data = await app.download_media(document)
-        return file_data.decode("utf-8")
-    except Exception as e:
-        print(f"Error reading and decoding document: {e}")
-        return ""
+def process_content(content):
+    links = []
+    current_name = ""
+
+    for line in content.split("\n"):
+        if ":https" in line:
+            parts = line.split(":https", 1)
+            if len(parts) == 2:
+                name, url = map(str.strip, parts)
+                name = name.rstrip(':')  # Remove trailing ":" in name
+                url_matches = re.findall(r'\bhttps?://\S+', url)
+                
+                if url_matches:
+                    url = url_matches[0]
+                    url = url.replace("https://", "")
+                    url = re.sub(r'https://', 'https://', url)
+                    url = url.replace("httpwww.", "www.")
+                    url = re.sub(r'https?://', 'https://', url, count=1)
+                    url = re.sub(r'/view\?usp=drivesdk$', '', url)
+
+                    links.append((current_name.rstrip(':'), url))
+                    current_name = ""  # Reset current_name for the next URL
+                else:
+                    current_name += line.strip()
+
+    return links
 
 @app.on_message(filters.document)
 async def process_text_file(_, message: Message):
     document = message.document
     if document.mime_type == "text/plain":
-        content = await read_and_decode_document(document)
-        if content:
-            content_lines = content.split("\n")
-            links = extract_urls_and_names(content_lines)
-            output_text = format_output(links)
-            if output_text:
+        try:
+            file_data = await app.download_media(document)
+            content = file_data.decode("utf-8")
+            links = process_content(content)
+
+            if links:
+                output_text = format_output(links)
                 await message.reply_text(output_text)
             else:
-                await message.reply_text("The processed text is empty or contains invalid characters.")
-        else:
+                await message.reply_text("No valid links found in the document.")
+        except Exception as e:
+            print(f"Error reading and decoding document: {e}")
             await message.reply_text("Error reading and decoding the document.")
     else:
         await message.reply_text("Please upload a valid text file.")
 
-def extract_urls_and_names(lines: list) -> list:
-    # Use regex to find all URLs and corresponding names
-    pattern = r'([^:\n]+)\s*:\s*(https?://[^\s]+)'
-    matches = [re.findall(pattern, line) for line in lines]
-    return [match for match_list in matches for match in match_list]
-
-def format_output(urls_and_names: list) -> str:
+def format_output(links: list) -> str:
     formatted_output = ""
-    for name, url in urls_and_names:
+    for name, url in links:
         formatted_output += f"{name}\n{url}\n"
     return formatted_output.strip()  # Remove trailing whitespace and newlines
 
