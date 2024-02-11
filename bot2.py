@@ -18,7 +18,7 @@ async def process_text_file(_, message: Message):
     document = message.document
     if document.mime_type == "text/plain":
         file_data = await app.download_media(document)
-        content_lines = file_data.decode("utf-8").split("\n")
+        content_lines = file_data.split("\n")
         links = extract_urls_and_names(content_lines)
         output_text = format_output(links)
         await message.reply_text(output_text)
