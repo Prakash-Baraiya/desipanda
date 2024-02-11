@@ -1,20 +1,27 @@
-import re
-from telegram import Update
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
-# Replace 'YOUR_BOT_TOKEN' with your actual bot token
-TOKEN = '6488165968:AAFyogItsIQm2VEsk_GWRsZAXf3ZNij-t6s'
+# Replace 'YOUR_API_ID' and 'YOUR_API_HASH' with your actual values
+API_ID = "11657097"
+API_HASH = "7198384c0cc8cb877e4731d14e2dd7b8"
+BOT_TOKEN = "6488165968:AAFyogItsIQm2VEsk_GWRsZAXf3ZNij-t6s"
 
-def start(update: Update, context: CallbackContext) -> None:
-    update.message.reply_text('Welcome to your bot! Please upload a text file.')
+app = Client("my_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-def process_text_file(update: Update) -> None:
-    text = update.message.text
-    urls_and_names = extract_urls_and_names(text)
-    output_text = format_output(urls_and_names)
-    
-    # Send the formatted output back to the user
-    update.message.reply_text(output_text)
+@app.on_message(filters.command("start"))
+def start(_, message: Message):
+    message.reply_text('Welcome to your bot! Please upload a text file.')
+
+@app.on_message(filters.document)
+def process_text_file(_, message: Message):
+    document = message.document
+    if document.mime_type == "text/plain":
+        text = app.get_file(document.file_id).download_as_text()
+        urls_and_names = extract_urls_and_names(text)
+        output_text = format_output(urls_and_names)
+        message.reply_text(output_text)
+    else:
+        message.reply_text("Please upload a valid text file.")
 
 def extract_urls_and_names(text: str) -> list:
     # Use regex to find all URLs and corresponding names
@@ -28,18 +35,5 @@ def format_output(urls_and_names: list) -> str:
         formatted_output += f"{name}\n{url}\n"
     return formatted_output
 
-def main() -> None:
-    updater = Updater(TOKEN)
-    dp = updater.dispatcher
-
-    # Add handlers
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(MessageHandler(Filters.TEXT & ~Filters.COMMAND, process_text_file))
-
-    # Start the Bot
-    updater.start_polling()
-
-    updater.idle()
-
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    app.run()
