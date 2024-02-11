@@ -1,6 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
-import re  # Add this import statement
+import re
 
 # Replace 'YOUR_API_ID' and 'YOUR_API_HASH' with your actual values
 API_ID = "11657097"
@@ -38,4 +38,3 @@ def format_output(urls_and_names: list) -> str:
 
 if __name__ == "__main__":
     app.run()
-    
