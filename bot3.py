@@ -1,3 +1,4 @@
+import os
 import json
 from telegram import Update
 from telegram.ext import Updater, MessageHandler, Filters
@@ -13,10 +14,13 @@ def convert_json_to_txt(json_data):
     return txt_content
 
 def handle_document(update: Update, context):
-    # Assuming you have a downloads directory
-    json_path = f"./downloads/{update.message.chat_id}_uploaded.json"
+    # Ensure the 'downloads' directory exists
+    download_dir = './downloads'
+    if not os.path.exists(download_dir):
+        os.makedirs(download_dir)
 
     # Save the uploaded JSON document
+    json_path = f"{download_dir}/{update.message.chat_id}_uploaded.json"
     update.message.document.get_file().download(json_path)
 
     # Load JSON from the uploaded file
@@ -27,7 +31,7 @@ def handle_document(update: Update, context):
     txt_content = convert_json_to_txt(data)
 
     # Save the text content to a file
-    txt_path = f"./downloads/{update.message.chat_id}_final.txt"
+    txt_path = f"{download_dir}/{update.message.chat_id}_final.txt"
     with open(txt_path, 'w') as txt_file:
         txt_file.write(txt_content)
 
