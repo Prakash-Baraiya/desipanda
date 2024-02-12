@@ -1,6 +1,6 @@
 import os
 import json
-from telegram import Update, InputFile
+from telegram import Update
 from telegram.ext import Updater, MessageHandler, Filters
 
 # Replace 'YOUR_BOT_TOKEN' with your actual bot token
@@ -36,8 +36,8 @@ def handle_document(update: Update, context):
         txt_file.write(txt_content)
 
     # Send the text file to Telegram chat
-    document = InputFile(txt_path)
-    context.bot.send_document(chat_id=update.message.chat_id, document=document)
+    with open(txt_path, 'rb') as txt_file:
+        context.bot.send_document(chat_id=update.message.chat_id, document=txt_file)
 
 # Set up the Telegram updater
 updater = Updater(token=bot_token, use_context=True)
