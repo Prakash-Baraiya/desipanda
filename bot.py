@@ -1,58 +1,71 @@
-from telegram import Update, Bot, InputFile
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import os
-import re
+import json
+from bs4 import BeautifulSoup
+from telegram import Update, InputFile
+from telegram.ext import Updater, MessageHandler, Filters
 
-TOKEN = '6488165968:AAFyogItsIQm2VEsk_GWRsZAXf3ZNij-t6s'
-bot = Bot(TOKEN)
-updater = Updater(bot=bot)
+# Replace 'YOUR_BOT_TOKEN' with your actual bot token
+bot_token = '6488165968:AAFyogItsIQm2VEsk_GWRsZAXf3ZNij-t6s'
 
-def start(update: Update, context):
-    update.message.reply_text('Hello! Send me a text or .txt file and I will extract all the links and names and format them as name:url. I will send you back the modified text as a .txt file.')
+def convert_json_to_txt(json_data):
+    txt_content = ""
+    for language, revisions in json_data.items():
+        for revision, url in revisions.items():
+            txt_content += f"{revision}:{url}\n"
+    return txt_content
 
-def handle_text(update: Update, context):
-    text = update.message.text
-    formatted_text = format_text(text)
-    with open('formatted_text.txt', 'w') as f:
-        f.write(formatted_text)
-    with open('formatted_text.txt', 'rb') as f:
-        context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='formatted_text.txt')
-    os.remove('formatted_text.txt')
+def convert_html_to_txt(html_content):
+    soup = BeautifulSoup(html_content, 'html.parser')
+    txt_content = ""
+
+    for row in soup.find_all('tr'):
+        title = row.find('td').text.strip()
+        link = row.find('a')['href']
+        txt_content += f"{title}:{link}\n"
+
+    return txt_content
 
 def handle_document(update: Update, context):
-    file = context.bot.getFile(update.message.document.file_id)
-    file.download('temp.txt')
-    with open('temp.txt', 'r') as f:
-        text = f.read()
-    formatted_text = format_text(text)
-    with open('formatted_text.txt', 'w') as f:
-        f.write(formatted_text)
-    with open('formatted_text.txt', 'rb') as f:
-        context.bot.send_document(chat_id=update.effective_chat.id, document=InputFile(f), filename='formatted_text.txt')
-    os.remove('temp.txt')
-    os.remove('formatted_text.txt')
+    # Ensure the 'downloads' directory exists
+    download_dir = './downloads'
+    if not os.path.exists(download_dir):
+        os.makedirs(download_dir)
 
-def format_text(text):
-    lines = text.split('\n')
-    formatted_lines = []
-    allowed_extensions = ['.m3u8', '.pdf', '.mpd', '.mp4', '.mkv', '.flv', '.rar', '.zip']
-    for i, line in enumerate(lines):
-        if re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', line):
-            if any(line.endswith(ext) for ext in allowed_extensions):
-                name_line = lines[i-1]
-                formatted_line = f'{name_line}:{line}'
-                formatted_lines.append(formatted_line)
-            else:
-                continue
-        elif i > 0 and re.match(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', lines[i-1]):
-            continue
+    # Save the uploaded document
+    file_path = f"{download_dir}/{update.message.chat_id}_uploaded"
+    update.message.document.get_file().download(file_path)
+
+    # Load content from the uploaded file
+    with open(file_path, 'rb') as file:
+        if file_path.endswith('.json'):
+            # Handle JSON
+            data = json.load(file)
+            txt_content = convert_json_to_txt(data)
+        elif file_path.endswith('.html'):
+            # Handle HTML
+            html_content = file.read().decode('utf-8')
+            txt_content = convert_html_to_txt(html_content)
         else:
-            continue
-    return '\n'.join(formatted_lines)
+            # Unsupported file format
+            context.bot.send_message(chat_id=update.message.chat_id, text="Unsupported file format.")
+            return
 
-updater.dispatcher.add_handler(CommandHandler('start', start))
-updater.dispatcher.add_handler(MessageHandler(Filters.text, handle_text))
-updater.dispatcher.add_handler(MessageHandler(Filters.document, handle_document))
+    # Save the text content to a file with UTF-8 encoding
+    txt_path = f"{download_dir}/{update.message.chat_id}_final.txt"
+    with open(txt_path, 'w', encoding='utf-8') as txt_file:
+        txt_file.write(txt_content)
 
+    # Send the text file to Telegram chat
+    with open(txt_path, 'rb') as txt_file:
+        context.bot.send_document(chat_id=update.message.chat_id, document=InputFile(txt_file))
+
+# Set up the Telegram updater
+updater = Updater(token=bot_token, use_context=True)
+dispatcher = updater.dispatcher
+
+# Register the document handler
+dispatcher.add_handler(MessageHandler(Filters.document, handle_document))
+
+# Start the bot
 updater.start_polling()
 updater.idle()
