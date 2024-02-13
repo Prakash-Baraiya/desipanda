@@ -2,7 +2,7 @@ import os
 import json
 from bs4 import BeautifulSoup
 from telegram import Update, InputFile
-from telegram.ext import Updater, MessageHandler, Filters
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
 # Replace 'YOUR_BOT_TOKEN' with your actual bot token
 bot_token = '6488165968:AAFyogItsIQm2VEsk_GWRsZAXf3ZNij-t6s'
@@ -25,6 +25,9 @@ def convert_html_to_txt(html_content):
 
     return txt_content
 
+def start(update: Update, context):
+    update.message.reply_text("WELCOME PRAKASH BARAIYA")
+
 def handle_document(update: Update, context):
     # Ensure the 'downloads' directory exists
     download_dir = './downloads'
@@ -35,13 +38,16 @@ def handle_document(update: Update, context):
     file_path = f"{download_dir}/{update.message.chat_id}_uploaded"
     update.message.document.get_file().download(file_path)
 
-    # Load content from the uploaded file
+    # Check the file extension
+    _, extension = os.path.splitext(file_path)
+
+    # Load content from the uploaded file based on the extension
     with open(file_path, 'rb') as file:
-        if file_path.endswith('.json'):
+        if extension.lower() == '.json':
             # Handle JSON
             data = json.load(file)
             txt_content = convert_json_to_txt(data)
-        elif file_path.endswith('.html'):
+        elif extension.lower() == '.html':
             # Handle HTML
             html_content = file.read().decode('utf-8')
             txt_content = convert_html_to_txt(html_content)
@@ -62,6 +68,9 @@ def handle_document(update: Update, context):
 # Set up the Telegram updater
 updater = Updater(token=bot_token, use_context=True)
 dispatcher = updater.dispatcher
+
+# Register the start command handler
+dispatcher.add_handler(CommandHandler("start", start))
 
 # Register the document handler
 dispatcher.add_handler(MessageHandler(Filters.document, handle_document))
