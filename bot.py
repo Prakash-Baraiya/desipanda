@@ -38,7 +38,7 @@ def handle_document(update: Update, context):
     file_path = f"{download_dir}/{update.message.chat_id}_uploaded"
     update.message.document.get_file().download(file_path)
 
-    # Check the file extension
+    # Check the file extension (case-insensitive)
     _, extension = os.path.splitext(file_path)
 
     # Load content from the uploaded file based on the extension
