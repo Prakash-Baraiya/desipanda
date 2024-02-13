@@ -18,7 +18,7 @@ def flatten_json(data, parent_key='', sep=':'):
     return txt_content
 
 def convert_json_to_txt(json_data):
-    txt_content = flatten_json(json_data)
+    txt_content = flatten_json(json_data, sep=':')
     return txt_content
 
 def convert_html_to_txt(html_content):
