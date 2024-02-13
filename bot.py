@@ -19,7 +19,10 @@ def flatten_json(data, parent_key='', sep=':'):
 
 def convert_json_to_txt(json_data):
     txt_content = flatten_json(json_data, sep=':')
-    return txt_content
+    txt_content_lines = txt_content.split('\n')
+    filtered_lines = [line.split(':')[1] for line in txt_content_lines if 'http' in line]
+    result = '\n'.join(filtered_lines)
+    return result
 
 def convert_html_to_txt(html_content):
     soup = BeautifulSoup(html_content, 'html.parser')
