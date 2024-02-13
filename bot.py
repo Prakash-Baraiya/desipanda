@@ -38,16 +38,15 @@ def handle_document(update: Update, context):
     file_path = f"{download_dir}/{update.message.chat_id}_uploaded"
     update.message.document.get_file().download(file_path)
 
-    # Check the file extension (case-insensitive)
-    _, extension = os.path.splitext(file_path)
-
-    # Load content from the uploaded file based on the extension
+    # Load content from the uploaded file based on the content type
     with open(file_path, 'rb') as file:
-        if extension.lower() == '.json':
+        content_type = update.message.document.mime_type
+
+        if content_type == 'application/json':
             # Handle JSON
             data = json.load(file)
             txt_content = convert_json_to_txt(data)
-        elif extension.lower() == '.html':
+        elif content_type == 'text/html':
             # Handle HTML
             html_content = file.read().decode('utf-8')
             txt_content = convert_html_to_txt(html_content)
