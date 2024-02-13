@@ -41,7 +41,7 @@ def handle_document(update: Update, context):
 
     # Send the text file to Telegram chat
     with open(txt_path, 'rb') as txt_file:
-        context.bot.send_document(chat_id=update.message.chat_id, document=InputFile(txt_path))
+        context.bot.send_document(chat_id=update.message.chat_id, document=InputFile(txt_file))
 
 # Set up the Telegram updater
 updater = Updater(token=bot_token, use_context=True)
