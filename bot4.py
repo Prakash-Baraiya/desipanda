@@ -34,9 +34,9 @@ def handle_document(update: Update, context):
     # Convert HTML to text
     txt_content = convert_html_to_txt(html_content)
 
-    # Save the text content to a file
+    # Save the text content to a file with UTF-8 encoding
     txt_path = f"{download_dir}/{update.message.chat_id}_final.txt"
-    with open(txt_path, 'w') as txt_file:
+    with open(txt_path, 'w', encoding='utf-8') as txt_file:
         txt_file.write(txt_content)
 
     # Send the text file to Telegram chat
