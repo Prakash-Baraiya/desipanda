@@ -25,34 +25,21 @@ def convert_html_to_txt(html_content):
 
     return txt_content
 
+def flatten_json(data, parent_key='', sep='_'):
+    flattened_dict = {}
+    for key, value in data.items():
+        new_key = f"{parent_key}{sep}{key}" if parent_key else key
+        if isinstance(value, dict):
+            flattened_dict.update(flatten_json(value, new_key, sep=sep))
+        else:
+            flattened_dict[new_key] = value
+    return flattened_dict
+
 def start(update: Update, context):
     update.message.reply_text("WELCOME PRAKASH BARAIYA")
 
 def handle_html(update: Update, context):
-    # Ensure the 'downloads' directory exists
-    download_dir = './downloads'
-    if not os.path.exists(download_dir):
-        os.makedirs(download_dir)
-
-    # Save the uploaded HTML document
-    html_path = f"{download_dir}/{update.message.chat_id}_uploaded.html"
-    update.message.document.get_file().download(html_path)
-
-    # Load HTML from the uploaded file
-    with open(html_path, 'r', encoding='utf-8') as html_file:
-        html_content = html_file.read()
-
-    # Convert HTML to text
-    txt_content = convert_html_to_txt(html_content)
-
-    # Save the text content to a file with UTF-8 encoding
-    txt_path = f"{download_dir}/{update.message.chat_id}_final.txt"
-    with open(txt_path, 'w', encoding='utf-8') as txt_file:
-        txt_file.write(txt_content)
-
-    # Send the text file to Telegram chat
-    with open(txt_path, 'rb') as txt_file:
-        context.bot.send_document(chat_id=update.message.chat_id, document=InputFile(txt_file))
+    # ... (your existing HTML handling logic)
 
 def handle_json(update: Update, context):
     # Ensure the 'downloads' directory exists
@@ -68,8 +55,11 @@ def handle_json(update: Update, context):
     with open(json_path) as json_file:
         data = json.load(json_file)
 
-    # Convert JSON to text
-    txt_content = convert_json_to_txt(data)
+    # Flatten the JSON data
+    flattened_data = flatten_json(data)
+
+    # Convert flattened data to text
+    txt_content = "\n".join([f"{key}: {value}" for key, value in flattened_data.items()])
 
     # Save the text content to a file with UTF-8 encoding
     txt_path = f"{download_dir}/{update.message.chat_id}_final.txt"
