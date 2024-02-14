@@ -11,9 +11,11 @@ def convert_html_to_txt(html_content):
     txt_content = ""
 
     for row in soup.find_all('tr'):
-        title = row.find('td').text.strip()
-        link = row.find('a')['href']
-        txt_content += f"{title}:{link}\n"
+        title_cell = row.find('td')
+        if title_cell and title_cell.find('a'):
+            title = title_cell.text.strip()
+            link = title_cell.find('a')['href']
+            txt_content += f"{title}:{link}\n"
 
     return txt_content
 
